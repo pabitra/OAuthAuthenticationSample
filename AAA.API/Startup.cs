@@ -2,11 +2,12 @@
 using System.Configuration;
 using System.Linq;
 using System.Net.Http.Formatting;
-using System.Threading.Tasks;
 using System.Web.Http;
+using AAA.API;
 using AAA.API.Infra;
 using AAA.API.Provider;
 using Microsoft.Owin;
+using Microsoft.Owin.Cors;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.DataHandler.Encoder;
 using Microsoft.Owin.Security.Jwt;
@@ -14,7 +15,7 @@ using Microsoft.Owin.Security.OAuth;
 using Newtonsoft.Json.Serialization;
 using Owin;
 
-[assembly: OwinStartup(typeof(AAA.API.Startup))]
+[assembly: OwinStartup(typeof(Startup))]
 
 namespace AAA.API
 {
@@ -30,7 +31,7 @@ namespace AAA.API
 
             ConfigureWebApi(httpConfig);
 
-            app.UseCors(Microsoft.Owin.Cors.CorsOptions.AllowAll);
+            app.UseCors(CorsOptions.AllowAll);
 
             app.UseWebApi(httpConfig);
 
@@ -50,6 +51,7 @@ namespace AAA.API
                 TokenEndpointPath = new PathString("/oauth/token"),
                 AccessTokenExpireTimeSpan = TimeSpan.FromDays(1),
                 Provider = new CustomOAuthProvider(),
+                RefreshTokenProvider = new SimpleRefreshTokenProvider(),
                 AccessTokenFormat = new CustomJwtFormat("http://localhost:60570")
             };
 

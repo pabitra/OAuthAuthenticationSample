@@ -17,8 +17,8 @@ namespace AAA.API.Provider
 
         public override Task ValidateClientAuthentication(OAuthValidateClientAuthenticationContext context)
         {
-            var clientId = string.Empty;
-            var clientSecret = string.Empty;
+            string clientId;
+            string clientSecret;
             Client client = null;
 
             if (!context.TryGetBasicCredentials(out clientId, out clientSecret))
@@ -35,9 +35,9 @@ namespace AAA.API.Provider
                 return Task.FromResult<object>(null);
             }
 
-            using (AuthRepository _repo = new AuthRepository())
+            using (var repo = new AuthRepository())
             {
-                client = _repo.FindClient(context.ClientId);
+                client = repo.FindClient(context.ClientId);
             }
 
             if (client == null)
@@ -78,9 +78,7 @@ namespace AAA.API.Provider
 
         public override async Task GrantResourceOwnerCredentials(OAuthGrantResourceOwnerCredentialsContext context)
         {
-            var allowedOrigin = context.OwinContext.Get<string>("as:clientAllowedOrigin");
-
-            if (allowedOrigin == null) allowedOrigin = "*";
+            var allowedOrigin = context.OwinContext.Get<string>("as:clientAllowedOrigin") ?? "*";
 
             context.OwinContext.Response.Headers.Add("Access-Control-Allow-Origin", new[] { allowedOrigin });
 
@@ -113,7 +111,7 @@ namespace AAA.API.Provider
             var props = new AuthenticationProperties(new Dictionary<string, string>
                 {
                     { 
-                        "as:client_id", (context.ClientId == null) ? string.Empty : context.ClientId
+                        "as:client_id", context.ClientId ?? string.Empty
                     },
                     { 
                         "userName", context.UserName

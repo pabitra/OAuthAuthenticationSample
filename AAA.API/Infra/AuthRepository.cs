@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using AAA.API.Models;
 using AAA.API.ViewModels;
 using Microsoft.AspNet.Identity;
@@ -52,26 +51,26 @@ namespace AAA.API.Infra
         public async Task<bool> AddRefreshToken(RefreshToken token)
         {
 
-            var existingToken = _ctx.RefreshTokens.Where(r => r.Subject == token.Subject && r.ClientId == token.ClientId).SingleOrDefault();
+            var existingToken = _ctx.RefreshTokens.SingleOrDefault(r => r.Subject == token.Subject && r.ClientId == token.ClientId);
 
             if (existingToken != null)
             {
-                var result = await RemoveRefreshToken(existingToken);
+                var result = await RemoveRefreshToken(existingToken).ConfigureAwait(false);
             }
 
-            _ctx.RefreshTokens.Add(token);
+            if (_ctx.RefreshTokens != null) _ctx.RefreshTokens.Add(token);
 
-            return await _ctx.SaveChangesAsync() > 0;
+            return await _ctx.SaveChangesAsync().ConfigureAwait(false) > 0;
         }
 
         public async Task<bool> RemoveRefreshToken(string refreshTokenId)
         {
-            var refreshToken = await _ctx.RefreshTokens.FindAsync(refreshTokenId);
+            var refreshToken = await _ctx.RefreshTokens.FindAsync(refreshTokenId).ConfigureAwait(false);
 
             if (refreshToken != null)
             {
                 _ctx.RefreshTokens.Remove(refreshToken);
-                return await _ctx.SaveChangesAsync() > 0;
+                return await _ctx.SaveChangesAsync().ConfigureAwait(false) > 0;
             }
 
             return false;
@@ -80,12 +79,12 @@ namespace AAA.API.Infra
         public async Task<bool> RemoveRefreshToken(RefreshToken refreshToken)
         {
             _ctx.RefreshTokens.Remove(refreshToken);
-            return await _ctx.SaveChangesAsync() > 0;
+            return await _ctx.SaveChangesAsync().ConfigureAwait(false) > 0;
         }
 
         public async Task<RefreshToken> FindRefreshToken(string refreshTokenId)
         {
-            var refreshToken = await _ctx.RefreshTokens.FindAsync(refreshTokenId);
+            var refreshToken = await _ctx.RefreshTokens.FindAsync(refreshTokenId).ConfigureAwait(false);
 
             return refreshToken;
         }
@@ -97,21 +96,21 @@ namespace AAA.API.Infra
 
         public async Task<IdentityUser> FindAsync(UserLoginInfo loginInfo)
         {
-            IdentityUser user = await _userManager.FindAsync(loginInfo);
+            IdentityUser user = await _userManager.FindAsync(loginInfo).ConfigureAwait(false);
 
             return user;
         }
 
-        public async Task<IdentityResult> CreateAsync(IdentityUser user)
+        public async Task<IdentityResult> CreateAsync(ApplicationUser user)
         {
-            var result = await _userManager.CreateAsync(user);
+            var result = await _userManager.CreateAsync(user).ConfigureAwait(false);
 
             return result;
         }
 
         public async Task<IdentityResult> AddLoginAsync(string userId, UserLoginInfo login)
         {
-            var result = await _userManager.AddLoginAsync(userId, login);
+            var result = await _userManager.AddLoginAsync(userId, login).ConfigureAwait(false);
 
             return result;
         }
